@@ -6,7 +6,7 @@
 unsigned long long keys[16];
 
 char plainText[]  = "ABCDEFGH";
-char globalKey[]        = "01230123";
+char globalKey[]  = "01230123";
 
 unsigned long long general_permutation(unsigned long long R, const unsigned char table[], int in_size, int out_size) {
     unsigned long long res = 0;
