@@ -37,36 +37,19 @@ void generate_keys(unsigned long long key) {
 /* ---- Feistel Function --- */
 // Expands the input and does 8 rounds of S-box permutations
 unsigned int f(unsigned int R, unsigned long long K) {
-    unsigned long long res;
-    unsigned long long S[9];
-
-    res = general_permutation((unsigned long long) R, E, 32, 48);
-    res = res ^ K;
-
-    S[8] = res & 0x3f;
-    S[7] = res >> 6  & 0x3f;
-    S[6] = res >> 12 & 0x3f;
-    S[5] = res >> 18 & 0x3f;
-    S[4] = res >> 24 & 0x3f;
-    S[3] = res >> 30 & 0x3f;
-    S[2] = res >> 36 & 0x3f;
-    S[1] = res >> 42 & 0x3f;
-
-    S[8] = sbox8[(((S[8] >> 5) << 1) | (S[8] & 0x1)) * 16 + ((S[8] >> 1) & 0xf)];
-    S[7] = sbox7[(((S[7] >> 5) << 1) | (S[7] & 0x1)) * 16 + ((S[7] >> 1) & 0xf)];
-    S[6] = sbox6[(((S[6] >> 5) << 1) | (S[6] & 0x1)) * 16 + ((S[6] >> 1) & 0xf)];
-    S[5] = sbox5[(((S[5] >> 5) << 1) | (S[5] & 0x1)) * 16 + ((S[5] >> 1) & 0xf)];
-    S[4] = sbox4[(((S[4] >> 5) << 1) | (S[4] & 0x1)) * 16 + ((S[4] >> 1) & 0xf)];
-    S[3] = sbox3[(((S[3] >> 5) << 1) | (S[3] & 0x1)) * 16 + ((S[3] >> 1) & 0xf)];
-    S[2] = sbox2[(((S[2] >> 5) << 1) | (S[2] & 0x1)) * 16 + ((S[2] >> 1) & 0xf)];
-    S[1] = sbox1[(((S[1] >> 5) << 1) | (S[1] & 0x1)) * 16 + ((S[1] >> 1) & 0xf)];
-
-    res = (S[1] << 42) | (S[2] << 36) | (S[3] << 30) | (S[4] << 24) |
-          (S[5] << 18) | (S[6] << 12) | (S[7] <<  6) | (S[8]);
-
-    res = general_permutation((unsigned long long)res, P, 32, 32);
-
-    return res;
+    unsigned long long Er, Sk;
+    unsigned char block, row, col;
+    unsigned int i, res;
+    unsigned long long bit_selection = 0x3f;
+    Er = general_permutation(R, E, 32, 48);
+    Sk = Er ^ K;
+    for (i = 0, res = 0, row = 0, col = 0; i < 8; i++) {
+        block = (Sk & (bit_selection << (42 - i * 6))) >> (42 - i * 6);
+        row = (((block & 0x20) >> 5) << 1) | (block & 0x1); // first and last bits
+        col = (block & 0x1e) >> 1; // middle bits
+        res = (sbox[i][row * 16 + col]) << (32 - 4*(i + 1)) | res;
+    }
+    return general_permutation(res, P, 32, 32);
 }
 
 /* ---- DES Cipher --- */
