@@ -60,18 +60,18 @@ unsigned long long des(unsigned long long input) {
     printf("Raw input: %llX\n", input);
     /* ---- Initial Permutation ---- */
     input = general_permutation(input, IP, 64, 64);
-    printf("Initial Permutation: %llX\n", input);
+    printf("Initial Permutation: %llX\n\n", input);
     /* ---- Feistel Network ---- */
     left  = input >> 32 & 0xffffffff;
     right = input       & 0xffffffff;
-    printf("Left 0: %llX\n", left);
-    printf("Right 0: %llX\n\n", right);
+
     for(i = 0 ; i < 16 ; i ++){
-      printf("R%02d = %08llX / SK%02d = %08llX\n", i, right, i+1, keys[i]);
+      printf("Round %02d:\n", i + 1);
+      printf("Key used = %llX\n", keys[i]);
       aux   = left;
       left  = right;
       right = aux ^ f(right, keys[i]);
-      printf("Round %02d: %08llX\n", i + 1, right);
+      printf("New right side = %08llX\n\n", right);
     }
 
     /* ---- Final Permutation ---- */
@@ -97,7 +97,7 @@ int main (int argc,char *argv[]) {
     generate_keys(key);
 
      while (fscanf(fp, "%llx", &buffer) != EOF) {
-       printf("%llX\n", des(buffer));
+       printf("\nCiphered text: %llX\n", des(buffer));
      }
 
     return 0;
