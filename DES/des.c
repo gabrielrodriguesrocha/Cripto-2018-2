@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "tables.h"
 
 unsigned long long keys[16];
@@ -55,27 +54,31 @@ unsigned int f(unsigned int R, unsigned long long K) {
 /* ---- DES Cipher --- */
 // Runs through 16 rounds of ciphering action
 unsigned long long des(unsigned long long input) {
-    unsigned long long right, left, aux;
+    unsigned int right, left, aux;
     int i;
-    printf("Raw input: %llX\n", input);
+    printf("Plaintext: %llX\n", input);
+    
     /* ---- Initial Permutation ---- */
     input = general_permutation(input, IP, 64, 64);
     printf("Initial Permutation: %llX\n\n", input);
+    
     /* ---- Feistel Network ---- */
-    left  = input >> 32 & 0xffffffff;
-    right = input       & 0xffffffff;
+    left  = input >> 32;
+    right = input;
 
     for(i = 0 ; i < 16 ; i ++){
       printf("Round %02d:\n", i + 1);
       printf("Key used = %llX\n", keys[i]);
+      printf("Left side = %08llX\n", left);
+      printf("Right side = %08llX\n\n", right);
       aux   = left;
       left  = right;
       right = aux ^ f(right, keys[i]);
-      printf("New right side = %08llX\n\n", right);
     }
 
     /* ---- Final Permutation ---- */
-    input = right << 32 | left;
+    input = (unsigned long long) right << 32 | left;
+    printf("Swap: %llX\n\n", input);
     input = general_permutation(input, IPinverse, 64, 64);
     return input;
 }
@@ -99,6 +102,9 @@ int main (int argc,char *argv[]) {
      while (fscanf(fp, "%llx", &buffer) != EOF) {
        printf("\nCiphered text: %llX\n", des(buffer));
      }
+
+    fclose(fk);
+    fclose(fp);
 
     return 0;
 }
